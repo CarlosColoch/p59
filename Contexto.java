@@ -85,10 +85,37 @@ public class Contexto {
 
 	public static void operacionConDirecciones() throws SQLException {
 		System.out.println("------------OPERACION CON DIRECCIONES -------------------------------");
+		Direccion direccionUsu1 = creaDireccion(1, "Benito Juárez", 1225, "Ciudad de México");
+		Direccion direccionUsu2 = creaDireccion(2, "Av. Insurgentes", 4, "Zacatecas");
+		Direccion direccionUsu3 = creaDireccion(3, "Av. Direccion repetida.", 4627, "a eliminar registro");
+
+		DireccionModel direccionModel = new DireccionModel(connection);
+		Direccion dirUsuario1 = direccionModel.guardar(direccionUsu1);
+		Direccion dirUsuario2 = direccionModel.guardar(direccionUsu2);
+		Direccion dirUsuario3 = direccionModel.guardar(direccionUsu3);
+
+		System.out.println(dirUsuario1);
+		System.out.println(dirUsuario2);
+		System.out.println(dirUsuario3);
+		System.out.println("----------------------------------------------------------------------");
+
+		Direccion direccion1EnDB = direccionModel.obtenerPorId(1);
+		System.out.println(direccion1EnDB);
+
+		Direccion direccion2EnDB = direccionModel.obtenerPorId(2);
+		System.out.println(direccion2EnDB);
+		System.out.println("----------------------------------------------------------------------");
 
 
+		Direccion direccionInexistente = direccionModel.obtenerPorId(4);
+		System.out.println(direccionInexistente);
+		System.out.println("----------------------------------------------------------------------");
 
+		direccionModel.eliminarPorId(3);
+		Direccion direccion3Eliminado = direccionModel.obtenerPorId(3);
 
+		System.out.println(direccion3Eliminado);
+		System.out.println("----------------------------------------------------------------------");
 	}
 
 	private static Usuario creaUsuario(String nombre, int edad) {
