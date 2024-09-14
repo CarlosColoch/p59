@@ -1,117 +1,91 @@
-package com.ebac.modulo34.recursos;
+package com.ebac.modulo36.recursos;
 
-import com.ebac.modulo33.MysqlConnection;
-import com.ebac.modulo34.dto.Direccion;
-import com.ebac.modulo34.dto.Telefono;
-import com.ebac.modulo34.dto.Usuario;
-import com.ebac.modulo34.model.DireccionModel;
-import com.ebac.modulo34.model.TelefonoModel;
-import com.ebac.modulo34.model.UsuarioModel;
+import com.ebac.modulo36.model.TelefonoModel;
+import com.ebac.modulo36.model.UsuarioModel;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.lang.annotation.Documented;
+import java.util.Optional;
 
 public class Contexto {
+	public static void main(String[] args) {
+		String connectionString = "mongodb://root:toor@localhost:27017";
+		MongoClient mongoClient = MongoClinets.create(connectionString);
+		MongoDatabase database = mongoClient.getDatabase("modulo33");
 
-	static Connection connection;
+		UsuarioModel usuarioModel = new UsuarioModel(database);
 
-	public static void main(String[] args) throws SQLException {
-		String url = "jdbc:mysql://localhost:3306/modulo33";
-		String user = "root";
-		String password = "root";
+		System.out.println("***********************  Usuarios  *******************");
+		// Crear un usuario
+		Document document = new Document("nombre, "Carlos")
+				.append("edad", 31);
+		.append("profesion", "Programador Java");
+		usuarioModel.guardar(document);
 
-		MysqlConnection mysqlConnection = new MysqlConnection();
-		connection = mysqlConnection.getConnection(url, user, password);
+		// Listar usuarios
+		usuarioModel.obtener();
 
-		operacionConUsuarios();
-		operacionConTelefonos();
-		operacionConDirecciones();
+		// Listar usuario por id
+		Object objectId = new ObjectId("54b9d18405148c2056cf6f2b");
+		Document documentABuscar = new Document("_id", objectId);
+		Optional<Document> usuarioEncontrado = usuarioModel.obtenerPorId(documentABuscar);
 
-		connection.close();
-	}
+		//Actualizar usuario
+		usuarioEncontrado.ifPresent(telefonoActual -> {
+			Document document  = new Document("nombre", "CarlosActualizado").append("edad", 61);
+			Document usuarioActualizado = new Document("$set", document);
 
-	public static void operacionConUsuarios() throws SQLException {
-		System.out.println("------------OPERACION CON USUARIOS -------------------------------");
-		Usuario usuarioMaria = creaUsuario("Maria", 25);
-		Usuario usuarioJulian = creaUsuario("Julian", 23);
+			usuarioModel.actualizar(usuarioActual, usuarioActualizado);
+		});
+		usuarioModel.obtener();
 
-		UsuarioModel usuarioModel = new UsuarioModel(connection);
-		Usuario maria = usuarioModel.guardar(usuarioMaria);
-		Usuario julian = usuarioModel.guardar(usuarioJulian);
+		// Eliminar usuario
+		usuarioModel.obtener();
+		usuarioEncontrado.ifPresent(usuarioModel::eliminar);
+		usuarioModel.obtener();
 
-		System.out.println(maria);
-		System.out.println(julian);
-		System.out.println("----------------------------------------------------------------------");
+		System.out.println("***********************  Telefonos  *******************");
+		UsuarioModel usuarioModel = new UsuarioModel(database);
+		TelefonoModel telefonoModel = new TelefonoModel(database);
 
-		Usuario usuario1EnDB = usuarioModel.obtenerPorId(1);
-		System.out.println(usuario1EnDB);
+		// Crear un registro de telefono
+		Document document = new Document("idTelefono, 1)
+				.append("numero", "55-4355-2364")
+				.append("tipo", "celular");
+				telefonoModel.guardar(document);
 
-		Usuario usuario2EnDB = usuarioModel.obtenerPorId(2);
-		System.out.println(usuario2EnDB);
-		System.out.println("----------------------------------------------------------------------");
+		// Listar telefonos
+		usuarioModel.obtener();
 
+		// Listar telefonos por id
+		Object objectId = new ObjectId("54b9d18405148c2056cf6f2b");
+		Document documentABuscar = new Document("_id", objectId);
+		Optional<Document> telefonoEncontrado = telefonoModel.obtenerPorId(documentABuscar);
 
-		Usuario usuarioInexistente = usuarioModel.obtenerPorId(3);
-		System.out.println(usuarioInexistente);
-		System.out.println("----------------------------------------------------------------------");
+		//Actualizar telefonos
+		telefonoEncontrado.ifPresent(telefonoActual -> {
+			Document document  = new Document("idUsuario", 2).append("numero", "55-2412-58308").append("tipo", "celular");
+			Document telefonoActualizado = new Document("$set", document);
 
-		usuarioModel.eliminarPorId(2);
-		Usuario usuario2Eliminado = usuarioModel.obtenerPorId(2);
-		System.out.println(usuario2Eliminado);
-		System.out.println("----------------------------------------------------------------------");
-	}
+			telefonoModel.actualizar(telefonoActual, telefonoActualizado);
+		});
+		telefonoModel.obtener();
 
-	public static void operacionConTelefonos() throws SQLException {
-		System.out.println("-------------------OPERACION CON TELEFONOS --------------------");
-		Telefono telefono1 = creaTelefono(1, "55-1111-2222", "casa");
-		Telefono telefono2 = creaTelefono(2, "55-4523-2533", "celular");
-		Telefono telefono3 = creaTelefono(4, "55-7893-22302", "oficina");
+		// Eliminar telefono
+		telefonoModel.obtener();
+		 //telefonoEncontrado.ifPresent(telefono -> telefonoModel.eliminar(telefonoEncontrado));
+		telefonoEncontrado.ifPresent(telefonoModel::eliminar);
+		telefonoModel.obtener();
 
-		//Registro de telefonos
-		TelefonoModel telefonoModel = new TelefonoModel(connection);
-		telefonoModel.guardar(telefono1);
-		telefonoModel.guardar(telefono2);
-		telefonoModel.guardar(telefono3);
-
-		//Consulta de telefonos
-		Telefono telefonoEnBD1 = telefonoModel.obtenerPorId(1);
-		Telefono telefonoEnBD2 = telefonoModel.obtenerPorId(2);
-		Telefono telefonoEnBD3 = telefonoModel.obtenerPorId(3);
-
-		System.out.println(telefonoEnBD1);
-		System.out.println(telefonoEnBD2);
-		System.out.println(telefonoEnBD3);
-	}
-
-	public static void operacionConDirecciones() throws SQLException {
-		System.out.println("------------OPERACION CON DIRECCIONES -------------------------------");
-
-
-
-
-	}
-
-	private static Usuario creaUsuario(String nombre, int edad) {
-		Usuario usuario = new Usuario();
-		usuario.setNombre(nombre);
-		usuario.setEdad(edad);
-		return usuario;
-	}
-
-	public static Telefono creaTelefono(int IdUsuario, String numero, String tipo) {
-		Telefono telefono = new Telefono();
-		telefono.setIdUsuario(IdUsuario);
-		telefono.setNumero(numero);
-		telefono.setTipo(tipo);
-		return telefono;
-	}
-
-	public static Direccion creaDireccion(int IdUsuario, String calle, int numero, String estado) {
-		Direccion direccion = new Direccion();
-		direccion.setIdUsuario(IdUsuario);
-		direccion.setCalle(calle);
-		direccion.setNumero(numero);
-		direccion.setEstado(estado);
-		return direccion;
 	}
 }
+
+
+
+
+
+
+
+
